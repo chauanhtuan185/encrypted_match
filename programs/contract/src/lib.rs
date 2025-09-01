@@ -246,31 +246,31 @@ pub enum ErrorCode {
     AbortedComputation,
     #[msg("Cluster not set")]
     ClusterNotSet,
-    #[msg("Username quá ngắn (tối thiểu 3 ký tự)")]
+    #[msg("Username too short (minimum 3 characters)")]
     UsernameTooShort,
-    #[msg("Username quá dài (tối đa 32 ký tự)")]
+    #[msg("Username too long (maximum 32 characters)")]
     UsernameTooLong,
-    #[msg("Username chỉ được chứa chữ, số và dấu gạch dưới")]
+    #[msg("Username can only contain letters, numbers and underscores")]
     InvalidUsernameFormat,
-    #[msg("Tuổi phải từ 18-99")]
+    #[msg("Age must be between 18-99")]
     InvalidAge,
-    #[msg("Dữ liệu riêng tư quá lớn (tối đa 1000 bytes)")]
+    #[msg("Private data too large (maximum 1000 bytes)")]
     DataTooLarge,
-    #[msg("Sở thích quá lớn (tối đa 500 bytes)")]
+    #[msg("Preferences too large (maximum 500 bytes)")]
     PreferencesTooLarge,
-    #[msg("Profile đã tồn tại")]
+    #[msg("Profile already exists")]
     ProfileAlreadyExists,
-    #[msg("Dữ liệu mã hóa không hợp lệ")]
+    #[msg("Invalid encrypted data")]
     InvalidEncryptedData,
-    #[msg("Cần có ảnh đại diện")]
+    #[msg("Avatar is required")]
     AvatarRequired,
-    #[msg("Cần có thông tin địa điểm")]
+    #[msg("Location information is required")]
     LocationRequired,
-    #[msg("Khóa mã hóa không hợp lệ")]
+    #[msg("Invalid encryption key")]
     InvalidEncryptionKey,
-    #[msg("User không được phép thực hiện action này")]
+    #[msg("User is not authorized to perform this action")]
     UnauthorizedUser,
-    #[msg("Session không hợp lệ")]
+    #[msg("Invalid session")]
     InvalidSession,
 }
 
