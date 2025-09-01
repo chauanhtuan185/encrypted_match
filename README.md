@@ -51,45 +51,6 @@ Traditional dating apps expose user data to companies, store sensitive informati
    └── No match = no information leaked about individual actions
 ```
 
-### Detailed Workflow
-
-#### Phase 1: Profile Setup
-```
-Client                    Blockchain               Arcium MPC
-  │                          │                        │
-  ├─ Generate Keypair        │                        │
-  ├─ Encrypt Sensitive Data  │                        │
-  └─ Submit Profile ────────►│                        │
-                             ├─ Store Public Data      │
-                             └─ Store Encrypted Data   │
-```
-
-#### Phase 2: Match Discovery
-```
-Client A                  Client B                 Blockchain
-  │                         │                        │
-  ├─ Browse Profiles ◄──────┼────────────────────────┤
-  ├─ See Public Info Only   │                        │
-  └─ Choose Target          │                        │
-```
-
-#### Phase 3: Encrypted Matching
-```
-Client A                  Blockchain               Arcium MPC              Client B
-  │                          │                        │                     │
-  ├─ Init Match Session ────►│◄──────────────────────►│                     │
-  │                          │                        ├─ Create Session     │
-  ├─ Submit Like (Encrypted)─►│◄──────────────────────►│                     │
-  │                          │                        ├─ Store Action A     │
-  │                          │                        │                     │
-  │                          │                        │ ◄─ Submit Like ─────┤
-  │                          │                        ├─ Store Action B     │
-  │                          │                        ├─ Compute Match      │
-  │                          │                        └─ Reveal Result ────►│
-  │                          │                                              │
-  └─ Receive Match Result ◄──┴──────────────────────────────────────────────┘
-```
-
 ### Privacy Guarantees
 
 1. **Individual Actions Hidden**: If only one person likes, the other never knows
@@ -99,34 +60,6 @@ Client A                  Blockchain               Arcium MPC              Clien
 5. **Forward Secrecy**: Past matches remain private even if keys compromised
 
 ## System Architecture
-
-### High-Level Architecture
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    Frontend Layer                           │
-│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐           │
-│  │   React     │ │   Zustand   │ │   Wallet    │           │
-│  │    App      │ │   Store     │ │  Adapter    │           │
-│  └─────────────┘ └─────────────┘ └─────────────┘           │
-└─────────────┬───────────────────────────────────────────────┘
-              │ RPC Calls / Event Listening
-┌─────────────┴───────────────────────────────────────────────┐
-│                  Solana Blockchain                          │
-│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐           │
-│  │   Smart     │ │   Account   │ │   Events    │           │
-│  │  Contract   │ │   Storage   │ │  & Logs     │           │
-│  └─────────────┘ └─────────────┘ └─────────────┘           │
-└─────────────┬───────────────────────────────────────────────┘
-              │ MPC Computation Calls
-┌─────────────┴───────────────────────────────────────────────┐
-│                   Arcium Network                            │
-│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐           │
-│  │     MPC     │ │ Encrypted   │ │  Circuit    │           │
-│  │ Computation │ │   State     │ │ Execution   │           │
-│  └─────────────┘ └─────────────┘ └─────────────┘           │
-└─────────────────────────────────────────────────────────────┘
-```
 
 ### Component Architecture
 
@@ -367,18 +300,7 @@ pub struct MatchResult {
 
 ## System Architecture
 
-### Layer Structure
-```
-┌─────────────────────┐
-│    Frontend App     │ React/Next.js + Wallet
-├─────────────────────┤
-│   Solana Program    │ Anchor smart contract
-├─────────────────────┤
-│   Arcium Network    │ MPC computation layer
-├─────────────────────┤
-│   Solana Network    │ Blockchain state/events
-└─────────────────────┘
-```
+
 
 ### Data Flow
 1. **Profile Creation**: Client encrypts sensitive data → Store on blockchain
@@ -388,11 +310,43 @@ pub struct MatchResult {
 5. **Result Delivery**: Callback updates blockchain state → Emit events
 
 ### MPC Operations Flow
-```
-Init Session → Submit Like (User A) → Submit Like (User B) → Check Match → Result
-     ↓              ↓                      ↓                   ↓          ↓
-   Encrypted     Encrypted              Encrypted           Reveals    Blockchain
-   Session       Action                 Action              Result     Event
+
+#### Detailed MPC Flow Diagram
+
+```mermaid
+sequenceDiagram
+    participant UA as User A
+    participant UB as User B
+    participant SC as Smart Contract
+    participant MPC as Arcium MPC
+    participant BC as Solana
+
+    UA->>SC: Initialize Match Session
+    SC->>MPC: Create Encrypted Session
+    MPC->>SC: Session Created
+    SC->>BC: Store Session Data
+
+    UA->>SC: Submit Like (Encrypted)
+    SC->>MPC: Process Like Action A
+    MPC->>MPC: Store Encrypted Action A
+
+    UB->>SC: Submit Like (Encrypted)
+    SC->>MPC: Process Like Action B
+    MPC->>MPC: Store Encrypted Action B
+
+    SC->>MPC: Check Mutual Match
+    MPC->>MPC: Compute Match Result
+    
+    alt Mutual Match Found
+        MPC->>SC: Return Match Result (True)
+        SC->>BC: Emit Match Event
+        BC->>UA: Notify Match Found
+        BC->>UB: Notify Match Found
+    else No Mutual Match
+        MPC->>SC: Return Match Result (False)
+        SC->>BC: Emit No Match Event
+        Note over UA,UB: No information leaked about individual actions
+    end
 ```
 
 ## Frontend Integration Guide
