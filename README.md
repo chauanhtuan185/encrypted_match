@@ -1,4 +1,4 @@
-# Encrypted Dating App - Technical Documentation
+# Encrypted Dating App
 
 ## Introduction
 
